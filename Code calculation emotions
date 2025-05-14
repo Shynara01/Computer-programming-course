@@ -1,0 +1,42 @@
+import pandas as pd
+import numpy as np
+from scipy.stats import ttest_rel
+from sklearn.preprocessing import LabelEncoder
+file_path = 'C:\\Users\\Shyna\\OneDrive\\Рабочий стол\\computer programming\\Emotions and Coping Strategies of L1 (answers).xlsx'
+data = pd.read_excel(file_path)
+print(data.head())
+descriptive_stats = data.describe()
+print(descriptive_stats)
+# Define function to calculate Cronbach's alpha
+def cronbach_alpha(df):
+    items = df.shape[1]
+    variances_sum = df.var(axis=0, ddof=1).sum()
+    total_variance = df.sum(axis=1).var(ddof=1)
+    alpha = (items / (items - 1)) * (1 - (variances_sum / total_variance))
+    return alpha
+# Calculate Cronbach's alpha for each construct
+constructs = {
+    "enjoyment": data[["enjoy_1", "enjoy_2", "enjoy_3", "enjoy_4"]],
+    "anxiety": data[["anx_1", "anx_2", "anx_3", "anx_4"]],
+    "boredom": data[["bore_1", "bore_2", "bore_3", "bore_4"]],
+    "hope": data[["hope_1", "hope_2", "hope_3", "hope_4"]],
+    "pride": data[["pride_1", "pride_2", "pride_3", "pride_4"]],
+    "curiosity": data[["curious_1", "curious_2", "curious_3", "curious_4"]],
+    "confusion": data[["confuse_1", "confuse_2", "confuse_3", "confuse_4"]],
+    "shame": data[["shame_1", "shame_2", "shame_3", "shame_4"]]
+}
+cronbach_alphas = {construct: cronbach_alpha(items) for construct, items in constructs.items()}
+print("Cronbach's alpha values:", cronbach_alphas)
+# Paired Sample T-tests
+pairs = [
+    ("frustrated", "hope"),
+    ("confused", "curious"),
+    ("ashamed", "proud"),
+    ("bored", "interested")
+]
+paired_ttest_results = {}
+for (neg_emotion, pos_emotion) in pairs:
+    t_stat, p_value = ttest_rel(data[neg_emotion], data[pos_emotion])
+    paired_ttest_results[f"{neg_emotion} vs {pos_emotion}"] = (t_stat, p_value)
+
+print("Paired t-test results:", paired_ttest_results)
